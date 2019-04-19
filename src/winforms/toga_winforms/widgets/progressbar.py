@@ -10,8 +10,8 @@ from datetime import datetime, timedelta
 
 PROGRESSBAR_MINIMUM_INTERNAL = 0
 PROGRESSBAR_MAXIMUM_INTERNAL = 100
-PROGRESSBAR_STEP_INTERNAL = 1
-PROGRESSBAR_TICK_INTERNAL = 50  # milliseconds
+PROGRESSBAR_STEP_INTERNAL = -1
+PROGRESSBAR_TICK_INTERNAL = 100  # milliseconds
 
 
 class ProgressBar(Widget):
@@ -19,30 +19,44 @@ class ProgressBar(Widget):
         self.native = WinForms.ProgressBar()
         self.native.interface = self.interface
         self.native.Minimum = PROGRESSBAR_MINIMUM_INTERNAL
-        self.native.Maximum = PROGRESSBAR_MAXIMUM_INTERNAL
         self.native.Step = PROGRESSBAR_STEP_INTERNAL
 
-    def _normalize_value(self):
-        return ((self.interface.value - PROGRESSBAR_MINIMUM_INTERNAL) / (self.interface.max - PROGRESSBAR_MINIMUM_INTERNAL)) * (PROGRESSBAR_MAXIMUM_INTERNAL - PROGRESSBAR_MINIMUM_INTERNAL) + PROGRESSBAR_MINIMUM_INTERNAL # noqa E501
+    def _normalize_value(self, value):
+        return ((value - PROGRESSBAR_MINIMUM_INTERNAL) / (self.interface.max - PROGRESSBAR_MINIMUM_INTERNAL)) * (PROGRESSBAR_MAXIMUM_INTERNAL - PROGRESSBAR_MINIMUM_INTERNAL) + PROGRESSBAR_MINIMUM_INTERNAL # noqa E501
+
+    def _wait_to_update(self, callback):
+        while self.interface.is_running:
+            desired = datetime.now() + timedelta(PROGRESSBAR_TICK_INTERNAL)
+            while desired < datetime.now():
+                # continute running event loop
+                # until ready to update bar
+                WinForms.Application.DoEvents()
+            callback()
+
+    def _pulse(self):
+        if self.native.Value == self._normalize_value(self.interface.value) or self.native.Value == PROGRESSBAR_MINIMUM_INTERNAL: #noqa E501
+            # the pulse has reached the current or minimum value
+            # invert the step direction
+            self.native.Step *= -1
+        self.native.PerformStep()
 
     def start(self):
+        #self.native.Value = PROGRESSBAR_MINIMUM_INTERNAL
+        self.native.Style = WinForms.ProgressBarStyle.Continuous
+        self.interface._is_running = True
+        self._wait_to_update(self._pulse)
 
-        def wait_to_update(duration, callback, current_value):
-            while datetime.now() + timedelta(duration) < datetime.now():
-                WinForms.Application.DoEvents()
-            callback(current_value)
 
-        def pulse(current_value):
-            if current_value == self.native.Value:
-                self.native.Value = PROGRESSBAR_MINIMUM_INTERNAL
-            self.native.Value += PROGRESSBAR_STEP_INTERNAL
+        # self.native.MarqueeAnimationSpeed = PROGRESSBAR_TICK_INTERNAL
+        # self.native.Style = WinForms.ProgressBarStyle.Marquee
 
-        if self.interface.is_determinate:
-            self.native.Style = WinForms.ProgressBarStyle.Continuous
-            wait_to_update(PROGRESSBAR_TICK_INTERNAL, pulse, self.native.Value)
-        else:
-            # place the progress bar in Marquee style
-            self.native.Style = WinForms.ProgressBarStyle.Marquee
+        # if self.interface.is_determinate:
+        #     self.native.Style = WinForms.ProgressBarStyle.Continuous
+        #     self._wait_to_update(PROGRESSBAR_TICK_INTERNAL, self._pulse)
+        # else:
+        #     # place the progress bar in Marquee mode
+        #     self.native.MarqueeAnimationSpeed = PROGRESSBAR_TICK_INTERNAL
+        #     self.native.Style = WinForms.ProgressBarStyle.Marquee
 
     def stop(self):
         self.native.Style = WinForms.ProgressBarStyle.Continuous
@@ -50,18 +64,12 @@ class ProgressBar(Widget):
 
     def set_max(self, value):
         if value is None:
-            self.native.Value = PROGRESSBAR_MINIMUM_INTERNAL
             self.set_enabled = True if self.is_running else False
         else:
-            self.native.Maximum = value
+            self.native.Maximum = self._normalize_value(value)
 
     def set_value(self, value):
-        # difference = value - self.native.Value
-        # step = 1 if difference >= 0 else -1
-        # for tick in range(0, difference, step):
-        #     self.native.PerformStep()
-        #     time.sleep(PROGRESSBAR_TICK_INTERNAL)
-        self.native.Value = self._normalize_value()
+        self.native.Value = self._normalize_value(value)
 
     def rehint(self):
         # Height must be non-zero
