@@ -1,4 +1,5 @@
 from toga import GROUP_BREAK, SECTION_BREAK
+from toga_wpf.widgets import Widget
 from travertino.layout import Viewport
 
 from .libs import WPF
@@ -70,6 +71,9 @@ class Window:
 
     def set_title(self, title: str) -> None:
         self.native.Title = title
+
+    def set_content(self, widget: Widget) -> None:
+        pass
 
     # def set_content(self, widget: toga.Widget) -> None:
 

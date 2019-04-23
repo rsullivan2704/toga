@@ -2,7 +2,7 @@ import sys
 import toga
 from .libs import Threading, WPF
 from .window import Window
-from typing import Iterable
+from typing import Iterable, TypeVar
 
 
 class MainWindow(Window):
@@ -29,10 +29,10 @@ class App:
 
     def _create_app_commands(self) -> None:
         self.interface.commands.add(
-            toga.Command(None, f'About {self.interface.name}', group=toga.Group.HELP) # noqa: E501
+            toga.Command(None, 'About {name}'.format(name=self.interface.name), group=toga.Group.HELP), # noqa: E501
             toga.Command(None, 'Preferences', group=toga.Group.FILE),
             # Quit should always be the last item, in a section on it's own
-            toga.Comand(lambda s: self.exit(), f'Exit {self.interface.name}', shortcut='q', group=toga.Group.FILE, section=sys.maxsize), # noqa: E501
+            toga.Comand(lambda s: self.exit(), 'Exit {name}'.format(name=self.interface.name), shortcut='q', group=toga.Group.FILE, section=sys.maxsize), # noqa: E501
             toga.Command(None, 'Visit homepage', group=toga.Group.HELP)
         )
 
@@ -69,7 +69,7 @@ class App:
         self.native.Run(self.interface.main_window._impl.native)
 
     def main_loop(self) -> None:
-        thread: Threading.Thread = Threading.Thread(Threading.ThreadStart(self.run_app))  # noqa: E501
+        thread = Threading.Thread = Threading.Thread(Threading.ThreadStart(self.run_app))  # noqa: E501
         thread.SetApartmentState(Threading.ApartmentState.STA)
         thread.Start()
         thread.Join()
