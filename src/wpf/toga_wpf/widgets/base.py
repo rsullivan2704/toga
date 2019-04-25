@@ -4,8 +4,8 @@ from typing import Union
 from travertino.constants import BOTTOM, CENTER, JUSTIFY, LEFT, RIGHT, TOP
 
 import toga
-from toga_wpf.libs import WPF, ArgumentException, Enum, FontFamily, Visibility
-from toga_wpf.widgets import colors
+from toga_wpf import colors
+from toga_wpf.libs import WPF, ArgumentException, Enum, FontFamily
 
 
 class Widget:
@@ -21,26 +21,23 @@ class Widget:
     def rehint(self) -> None:
         pass
 
-    @property
-    def container(self) -> toga.Widget:
-        return self._container
+    # @property
+    # def container(self) -> toga.Widget:
+    #     return self._container
 
-    @container.setter
-    def container(self, container: toga.Widget) -> None:
-        self._container = container
-        try:
-            self.native.Parent = container
-        except AttributeError:
-            pass
-        for child in self.interface.children:
-            child._impl.container = container
-        self.rehint()
+    # @container.setter
+    # def container(self, container: toga.Widget) -> None:
+    #     self._container = container
+    #     try:
+    #         self.native.Parent = container
+    #     except AttributeError:
+    #         pass
+    #     for child in self.interface.children:
+    #         child._impl.container = container
+    #     self.rehint()
 
-    def add_child(self, child: toga.Widget) -> None:
-        try:
-            child.container = self.container
-        except AttributeError:
-            pass
+    def add_child(self, child: 'Widget') -> None:
+        pass
 
     def set_app(self, app: toga.App) -> None:
         pass
@@ -97,9 +94,9 @@ class Widget:
     def set_hidden(self, hidden: bool) -> None:
         try:
             if hidden:
-                visibility = Visibility.Hidden
+                visibility = WPF.Visibility.Hidden
             else:
-                visibility = Visibility.Visible
+                visibility = WPF.Visibility.Visible
             self.native.Visibility = visibility
         except AttributeError:
             pass
