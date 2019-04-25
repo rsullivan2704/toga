@@ -1,12 +1,14 @@
-from toga import GROUP_BREAK, SECTION_BREAK
-from toga_wpf.widgets import Widget
 from travertino.layout import Viewport
 
-from .libs import WPF
+import toga
+from toga import GROUP_BREAK, SECTION_BREAK
+
+from .libs import WPF, System, add_handler
+from .widgets import base
 
 
 class WinWPFViewport:
-    def __init__(self, native: WPF.Window, frame: Window) -> None:
+    def __init__(self, native: WPF.Window, frame: toga.Window) -> None:  # FIXME need to find the type for frame # noqa: E501
         self.native = native
         self.frame = frame
         self.dpi = 96
@@ -26,10 +28,12 @@ class Window:
         self.interface._impl = self
         self.create()
 
-    def on_size_changed(self, sender: WPF.FrameworkElement, args: WPF.SizeChangedEventArgs) -> None:  # noqa: E501
-        if self.interface.content:
+    def _on_size_changed(self, sender, event) -> None:  # noqa: E501
+        try:
             # re-layout the content
             self.interface.content.refresh()
+        except AttributeError:
+            pass
 
     def create(self) -> None:
         self.native = WPF.Window()
@@ -52,11 +56,12 @@ class Window:
                 item = WPF.Controls.Button()
                 item.Command = cmd.native
             tb.Items.add(item)
+        self.native.Content.Children.Add(self.toolbar_native)
 
     def set_app(self, app: toga.App) -> None:
-        # app set when assigning window to the application
         pass
 
+    @property
     def vertical_shift(self) -> int:
         result = 0
         try:
@@ -72,8 +77,19 @@ class Window:
     def set_title(self, title: str) -> None:
         self.native.Title = title
 
-    def set_content(self, widget: Widget) -> None:
+    def set_content(self, widget: base.Widget) -> None:
+        self.native.Content = WPF.Controls.DockPanel()
+        if self.toolbar_native:
+            self.native.Content.Children.Add(self.toolbar_native)
+        widget.viewport = WinWPFViewport(self.native, self)
+        widget.frame = self
+        self.native.Content.Children.Add(widget.native)
+
+    def set_position(self, position: tuple) -> None:
         pass
 
-    # def set_content(self, widget: toga.Widget) -> None:
+    def set_size(self, size: tuple) -> None:
+        pass
 
+    def show(self) -> None:
+        self.native.Show()
