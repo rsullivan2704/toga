@@ -43,7 +43,7 @@ class Command:
             self.native.set_CanExecute(self.predicate)
 
     def action(self, parameter) -> None:
-        self.interface.action()
+        self.interface.action(parameter)
 
     def predicate(self, parameter) -> bool:
         return self.interface.enabled
