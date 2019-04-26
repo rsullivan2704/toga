@@ -56,7 +56,6 @@ class Window:
                 item = WPF.Controls.Button()
                 item.Command = cmd.native
             tb.Items.add(item)
-        self.native.Content.Children.Add(self.toolbar_native)
 
     def set_app(self, app: toga.App) -> None:
         pass
@@ -69,6 +68,7 @@ class Window:
         except AttributeError:
             pass
         try:
+            # TODO: fix this as there is no MainMenuStrip
             result += self.native.interface._impl.native.MainMenuStrip.Height
         except AttributeError:
             pass
@@ -78,12 +78,19 @@ class Window:
         self.native.Title = title
 
     def set_content(self, widget: base.Widget) -> None:
-        self.native.Content = WPF.Controls.DockPanel()
-        if self.toolbar_native:
-            self.native.Content.Children.Add(self.toolbar_native)
-        widget.viewport = WinWPFViewport(self.native, self)
+        dock_panel = WPF.Controls.DockPanel()
+        try:
+            dock_panel.Children.Add(self.interface.app._impl.menubar)
+        except System.ArgumentNullException:
+            pass
+        try:
+            dock_panel.Children.Add(self.toolbar_native)
+        except System.ArgumentNullException:
+            pass
+        widget.viewport = WinWPFViewport(dock_panel, self)
         widget.frame = self
-        self.native.Content.Children.Add(widget.native)
+        dock_panel.Children.Add(widget.native)
+        self.native.Content = dock_panel
 
     def set_position(self, position: tuple) -> None:
         pass

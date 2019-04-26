@@ -34,13 +34,13 @@ class App:
         factory = toga.platform.get_platform_factory()
         # Only create the menu if the menu item index has been created
         # if hasattr(self, '_menu_items'):
-        menubar = WPF.Controls.Menu()
+        self.menubar = WPF.Controls.Menu()
         group_menu = None
         for cmd in self.interface.commands:
             if cmd == toga.GROUP_BREAK or cmd == toga.SECTION_BREAK:
-                menubar.Items.Add(WPF.Controls.Separator())
+                self.menubar.Items.Add(WPF.Controls.Separator())
             else:
-                group_menus = [menu for menu in menubar.Items if hasattr(menu, 'Header') and menu.Header == cmd.group.label] # noqa: E501
+                group_menus = [menu for menu in self.menubar.Items if hasattr(menu, 'Header') and menu.Header == cmd.group.label] # noqa: E501
                 if len(group_menus) > 0:
                     group_menu = group_menus[0]
                 else:
@@ -49,19 +49,19 @@ class App:
                 menu_item = WPF.Controls.MenuItem()
                 bound_command = cmd.bind(factory)
                 menu_item.Command = bound_command.native
+                menu_item.Header = cmd.label
                 cmd._widgets.append(menu_item)
                 group_menu.Items.Add(menu_item)
-            if group_menu not in menubar.Items:
-                menubar.Items.Add(group_menu)
-        self.interface.main_window._impl.native.Content.Children.Add(menubar)
+            if group_menu not in self.menubar.Items:
+                self.menubar.Items.Add(group_menu)
 
     def create(self) -> None:
         self.native = WPF.Application()
         self._create_app_commands()
 
         # Call user code to populate the main window
-        self.interface.startup()
         self.create_menus()
+        self.interface.startup()
         # self.interface.main_window._impl.native.Icon = self.interface.icon.bind(self.interface.factory).native  # noqa: E501
 
     def run_app(self) -> None:
