@@ -14,6 +14,7 @@ import System.Windows as WPF  # noqa: W0611
 from System import ArgumentException  # noqa: W0611
 from System import Enum  # noqa: W0611
 from System import Threading  # noqa: W0611
+from System.Windows import Controls  # noqa: W0611
 from System.Windows import Input  # noqa: W0611
 from System.Windows.Media import Imaging  # noqa: W0611
 from System.Windows.Media import FontFamily  # noqa: W0611

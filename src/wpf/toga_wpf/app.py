@@ -4,7 +4,7 @@ from typing import Iterable
 
 import toga
 
-from .libs import WPF, Threading, add_handler
+from .libs import Controls, WPF, Threading, add_handler
 from .window import Window
 
 
@@ -34,19 +34,20 @@ class App:
         factory = toga.platform.get_platform_factory()
         # Only create the menu if the menu item index has been created
         # if hasattr(self, '_menu_items'):
-        self.menubar = WPF.Controls.Menu()
+        self.menubar = Controls.Menu()
+        self.menubar.HorizontalAlignment = WPF.HorizontalAlignment.Left
         group_menu = None
         for cmd in self.interface.commands:
             if cmd == toga.GROUP_BREAK or cmd == toga.SECTION_BREAK:
-                self.menubar.Items.Add(WPF.Controls.Separator())
+                self.menubar.Items.Add(Controls.Separator())
             else:
                 group_menus = [menu for menu in self.menubar.Items if hasattr(menu, 'Header') and menu.Header == cmd.group.label] # noqa: E501
                 if len(group_menus) > 0:
                     group_menu = group_menus[0]
                 else:
-                    group_menu = WPF.Controls.MenuItem()
+                    group_menu = Controls.MenuItem()
                     group_menu.Header = cmd.group.label
-                menu_item = WPF.Controls.MenuItem()
+                menu_item = Controls.MenuItem()
                 bound_command = cmd.bind(factory)
                 menu_item.Command = bound_command.native
                 menu_item.Header = cmd.label
@@ -100,4 +101,4 @@ class App:
         thread.Join()
 
     def exit(self) -> None:
-        self.native.Exit()
+        return WPF.Application.Current.Shutdown()

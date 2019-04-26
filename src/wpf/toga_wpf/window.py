@@ -3,7 +3,7 @@ from travertino.layout import Viewport
 import toga
 from toga import GROUP_BREAK, SECTION_BREAK
 
-from .libs import WPF, System, add_handler
+from .libs import Controls, WPF, System
 from .widgets import base
 
 
@@ -45,15 +45,15 @@ class Window:
         self.toolbar_items = None  # type: WPF.Controls.Button
 
     def create_toolbar(self) -> None:
-        tb = WPF.Controls.ToolBar()
-        self.toolbar_native = WPF.Controls.ToolBarTray()
+        tb = Controls.ToolBar()
+        self.toolbar_native = Controls.ToolBarTray()
         self.toolbar_native.ToolBars.Add(tb) # noqa: E501
         for cmd in self.interface.toolbar:
             if cmd == GROUP_BREAK or cmd == SECTION_BREAK:
-                item = WPF.Controls.Separator()
+                item = Controls.Separator()
             else:
                 cmd.bind(self.interface.factory)
-                item = WPF.Controls.Button()
+                item = Controls.Button()
                 item.Command = cmd.native
             tb.Items.add(item)
 
@@ -78,8 +78,10 @@ class Window:
         self.native.Title = title
 
     def set_content(self, widget: base.Widget) -> None:
-        dock_panel = WPF.Controls.DockPanel()
+        dock_panel = Controls.DockPanel()
+        dock_panel.LastChildFill = True
         try:
+            Controls.DockPanel.SetDock(self.interface.app._impl.menubar, Controls.Dock.Top)
             dock_panel.Children.Add(self.interface.app._impl.menubar)
         except System.ArgumentNullException:
             pass
