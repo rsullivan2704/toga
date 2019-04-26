@@ -4,29 +4,32 @@ from .libs import System, Input
 
 
 class DelegateCommand(Input.ICommand):
-    # TODO: Have to figure this out
     __namespace__ = 'toga_wpf'
 
     def __init__(self) -> None:
-        self.CanExecuteChanged += self._can_execute_changed
+        self.can_execute_changed_handlers = []
 
-    def _can_execute_changed(sender, args) -> None:
-        pass
+    def add_CanExecuteChanged(self, handler):
+        self.can_execute_changed_handlers.append(handler)
 
-    def CanExecute(self, parameter: System.Object) -> bool:
+    def remove_CanExecuteChanged(self, handler):
+        self.can_execute_changed_handlers.remove(handler)
+
+    def Execute(self, parameter) -> None:
+        self._execute(parameter)
+
+    def set_Execute(self, action) -> None:
+        self._execute = action
+
+    def CanExecute(self, parameter) -> bool:
         return True if self._can_execute is None else self._can_execute(parameter)  # noqa: E501
 
-    def set_canexecute(self, predicate: System.Predicate[System.Object]) -> None:  # noqa: E501
+    def set_CanExecute(self, predicate) -> None:
         self._can_execute = predicate
 
-    def Execute(self, parameter: System.Object) -> None:
-        try:
-            self._execute(parameter)
-        except AttributeError:
-            pass
-
-    def set_execute(self, action: System.Action[System.Object]) -> None:
-        self._execute = action
+    def OnCanExecuteChanged(self) -> None:
+        for handler in self.can_execute_changed_handlers:
+            handler(self, System.EventArgs.Empty)
 
 
 class Command:
@@ -34,10 +37,13 @@ class Command:
         self.interface = interface
         self.native = None
         if self.interface.action is not None:
-            def can_execute(interface: toga.Command) -> bool:
-                return interface.enabled
-            action = System.Action(self.interface.action)
-            predicate = System.Predicate[System.Object](can_execute)
+            # action_delegate = System.Action(self.action)
             self.native = DelegateCommand()
-            self.native.set_canexecute(predicate)
-            self.native.set_execute(action)
+            self.native.set_Execute(self.action)
+            self.native.set_CanExecute(self.predicate)
+
+    def action(self, parameter) -> None:
+        self.interface.action()
+
+    def predicate(self, parameter) -> bool:
+        return self.interface.enabled
