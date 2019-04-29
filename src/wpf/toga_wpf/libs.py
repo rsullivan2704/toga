@@ -1,12 +1,9 @@
-import os
 import sys
 
 import clr
 
 if sys.platform.lower() not in ['cli', 'win32']:
     print("WPF is only supported on Windows platform")
-windir = os.environ['WINDIR']
-# clr.AddReference('{dir}\\Microsoft.NET\\Framework64\\v4.0.30319\\WPF\\PresentationFramework.dll'.format(dir=windir)) # noqa: E501
 clr.AddReference(r"wpf\PresentationFramework") # noqa: E501
 
 import System  # noqa: W0611
