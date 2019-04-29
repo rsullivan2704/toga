@@ -4,7 +4,7 @@ from typing import Union
 from travertino.constants import BOTTOM, CENTER, JUSTIFY, LEFT, RIGHT, TOP
 
 import toga
-from toga_wpf import colors
+from toga_wpf import colors, factory
 from toga_wpf.libs import WPF, ArgumentException, Enum, FontFamily
 
 
@@ -20,21 +20,6 @@ class Widget:
 
     def rehint(self) -> None:
         pass
-
-    # @property
-    # def container(self) -> toga.Widget:
-    #     return self._container
-
-    # @container.setter
-    # def container(self, container: toga.Widget) -> None:
-    #     self._container = container
-    #     try:
-    #         self.native.Parent = container
-    #     except AttributeError:
-    #         pass
-    #     for child in self.interface.children:
-    #         child._impl.container = container
-    #     self.rehint()
 
     def add_child(self, child: 'Widget') -> None:
         pass
@@ -89,7 +74,11 @@ class Widget:
                 align = Enum.Parse(WPF.VerticalAlignment, alignment, True)
                 self.native.VerticalAlignment = align
             except (AttributeError, ArgumentException):
-                pass
+                # The above calls will always fail since we cannot get the
+                # actual enum Type from pythonnet.
+                # TODO: Have to figure out how to parse a .net Enum from
+                # a text value, ignoring case
+                factory.not_implemented('Applicator.text_alignment')
 
     def set_hidden(self, hidden: bool) -> None:
         try:
@@ -101,22 +90,12 @@ class Widget:
         except AttributeError:
             pass
 
-    def _internal_getattr(obj: object, attr: str) -> object:
-        for a in dir(obj):
-            if a.lower() == attr.lower():
-                return builtins.getattr(obj, a)
-
     def set_font(self, font: toga.Font) -> None:
-        try:
-            family = FontFamily(font.family)
-            self.native.FontFamily = family
-            self.native.FontSize = font.size
-            style = Enum.Parse(WPF.FontStyles, font.style, True)
-            self.native.FontStyle = style
-            weight = self._internal_getattr(WPF.FontWeights(), font.weight)
-            self.native.FontWeight = weight
-        except (AttributeError, ArgumentException):
-            pass
+        font.bind(factory)
+        self.native.FontFamily = font._impl.native.typeface.FontFamily
+        self.native.FontSize = font._impl.native.size
+        self.native.FontStyle = font._impl.native.typeface.Style
+        self.native.FontWeight = font._impl.native.typeface.Weight
 
     def set_color(self, color: toga.colors.Color) -> None:
         try:
