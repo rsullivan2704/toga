@@ -1,16 +1,16 @@
 import toga
-from .libs import WPF
+from .libs import Color, SolidColorBrush
 
 CACHE = {}
 
 
-def get_brush(c: toga.colors.Color) -> WPF.Media.SolidColorBrush:
-    brush = WPF.Media.SolidColorBrush()
+def get_brush(c: toga.colors.Color) -> SolidColorBrush:
+    brush = SolidColorBrush()
     try:
-        color = CACHE[c]
+        brush = CACHE[c]
     except KeyError:
         rgba = c.rgba()
-        color = WPF.Media.Color.FromARGB(rgba.a, rgba.r, rgba.g, rgba.b)
+        color = Color.FromARGB(rgba.a, rgba.r, rgba.g, rgba.b)
         brush.Color = color
         CACHE[c] = brush
     return brush
