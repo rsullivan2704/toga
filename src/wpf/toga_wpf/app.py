@@ -20,7 +20,39 @@ class App:
         self.interface = interface
         self.interface._impl = self
 
-    def _create_app_commands(self) -> None:
+    def current_window(self) -> None:
+        return WPF.Application.Current.Windows.OfType[WPF.Window]().FirstOrDefault(lambda x: x.IsActive)  # noqa: E501
+
+    def enter_full_screen(self, windows: Iterable[toga.Window]) -> None:
+        for window in windows:
+            window.full_screen = True
+
+    def exit_full_screen(self, windows: Iterable[toga.Window]) -> None:
+        for window in windows:
+            window.full_screen = False
+
+    def show_cursor(self) -> None:
+        pass
+
+    def hide_cursor(self) -> None:
+        pass
+
+    def main_loop(self) -> None:
+        thread = Threading.Thread(Threading.ThreadStart(self.run_app))  # noqa: E501
+        thread.SetApartmentState(Threading.ApartmentState.STA)
+        thread.Start()
+        thread.Join()
+
+    def exit(self) -> None:
+        return WPF.Application.Current.Shutdown()
+
+    def set_on_exit(self, handler: types.FunctionType) -> None:
+        try:
+            self.native.Exit += add_handler(handler)
+        except AttributeError:
+            pass
+
+    def create_app_commands(self) -> None:
         self.interface.commands.add(
             toga.Command(None, 'About {name}'.format(name=self.interface.name), group=toga.Group.HELP), # noqa: E501
             toga.Command(None, 'Preferences', group=toga.Group.FILE),
@@ -58,7 +90,7 @@ class App:
 
     def create(self) -> None:
         self.native = WPF.Application()
-        self._create_app_commands()
+        self.create_app_commands()
 
         # Call user code to populate the main window
         self.create_menus()
@@ -68,37 +100,3 @@ class App:
     def run_app(self) -> None:
         self.create()
         self.native.Run(self.interface.main_window._impl.native)
-
-    def set_on_exit(self, handler: types.FunctionType) -> None:
-        try:
-            self.native.Exit += add_handler(handler)
-        except AttributeError:
-            pass
-
-    def current_window(self) -> None:
-        self.interface.factor.not_implemented('App.current_window()')
-
-    def enter_full_screen(self, windows: Iterable[toga.Window]) -> None:
-        for window in windows:
-            window._impl.native.WindowState = WPF.WindowState.Maximized
-            window._impl.native.WindowStyle = 0  # WPF.WindowStyle.None ".None" throws a syntax error  # noqa: E501
-
-    def exit_full_screen(self, windows: Iterable[toga.Window]) -> None:
-        for window in windows:
-            window._impl.native.WindowState = WPF.WindowState.Normal
-            window._impl.native.WindowStyle = WPF.WindowStyle.SingleBorderWindow  # noqa: E501
-
-    def show_cursor(self) -> None:
-        pass
-
-    def hide_cursor(self) -> None:
-        pass
-
-    def main_loop(self) -> None:
-        thread = Threading.Thread(Threading.ThreadStart(self.run_app))  # noqa: E501
-        thread.SetApartmentState(Threading.ApartmentState.STA)
-        thread.Start()
-        thread.Join()
-
-    def exit(self) -> None:
-        return WPF.Application.Current.Shutdown()
