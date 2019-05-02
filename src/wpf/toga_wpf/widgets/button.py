@@ -4,7 +4,7 @@ import typing
 
 from toga.handlers import wrapped_handler
 
-from toga_wpf.libs import WPF
+from toga_wpf.libs import WPF, __logger__
 
 from .base import Widget
 
@@ -18,7 +18,8 @@ class WPFButton(WPF.Controls.Button):
     def on_click(self, sender: WPF.Controls.Button, eventargs: WPF.RoutedEventArgs) -> None:  # noqa: E501
         try:
             self.interface.on_press(self.interface)
-        except AttributeError:
+        except AttributeError as ex:
+            __logger__.info('Error in on_click method call\n{message}'.format(message=str(ex)))
             pass
 
 
@@ -30,4 +31,9 @@ class Button(Widget):
         self.native.Content = label
 
     def set_on_press(self, handler: type(wrapped_handler)) -> None:  # noqa: E501
+        __logger__.debug('Passing toga_wpf.Button.set_on_press() method call')
         pass
+
+    # def rehint(self) -> None:
+    #     __logger__.debug('Passing toga_wpf.Button.rehint() method call\n{instance}'.format(instance=self))
+    #     pass
