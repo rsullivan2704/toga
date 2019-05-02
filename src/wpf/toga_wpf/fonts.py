@@ -4,7 +4,7 @@ from collections import namedtuple
 import toga
 from toga_wpf.libs import (WPF, Brushes, CultureInfo, Enum,
                            FontFamilyConverter, FontStretches, FormattedText,
-                           NumberSubstitution, System, Typeface, get_clr_type)
+                           NumberSubstitution, System, Typeface, __logger__)  # , get_clr_type)
 
 _FONT_CACHE = {}
 
@@ -37,7 +37,10 @@ class Font:
             # clr.GetClrType(typ) has not been implemented on the PyPI
             # distro of pythonnet due to an unresolved numpy issue
             # capitals_enum = clr.GetClrType(WPF.FontCapitals)
-            # font.variant = Enum.Parse(capitals_enum, self.interface.variant, True)  # noqa: E501
+            try:
+                font.variant = Enum.Parse(WPF.FontCapitals, self.interface.variant, True)  # noqa: E501
+            except (AttributeError, System.ArgumentNullException, ArgumentExcetption, OverflowException) as ex:  # noqa: E501
+                __logger__.debug('Error parsing System.Windows.FontCapitals enumerated value.\nValue: {value}\n{exception}'.format(value=self.interface.value, exception=ex))  # noqa: E501
 
             _FONT_CACHE[self.interface] = font
 
