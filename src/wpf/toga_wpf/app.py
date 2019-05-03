@@ -1,15 +1,16 @@
 import sys
-import types
 from typing import Iterable
 
 import toga
+from toga.handlers import wrapped_handler
 
-from .libs import Controls, WPF, Threading, add_handler
+from .libs import Controls, WPF, Threading, add_handler, __logger__
 from .window import Window
 
 
 class MainWindow(Window):
     def on_close(self):
+        __logger__.debug('Passing MainWindow.on_close method call.')
         pass
 
 
@@ -32,9 +33,11 @@ class App:
             window.full_screen = False
 
     def show_cursor(self) -> None:
+        __logger__.debug('Passing App.show_cursor method call.')
         pass
 
     def hide_cursor(self) -> None:
+        __logger__.debug('Passing App.hide_cursor method call.')
         pass
 
     def main_loop(self) -> None:
@@ -46,10 +49,11 @@ class App:
     def exit(self) -> None:
         return WPF.Application.Current.Shutdown()
 
-    def set_on_exit(self, handler: types.FunctionType) -> None:
+    def set_on_exit(self, handler: wrapped_handler) -> None:
         try:
             self.native.Exit += add_handler(handler)
         except AttributeError:
+            __logger__.info('Passing AttributeError in App.set_on_exit method call.')
             pass
 
     def create_app_commands(self) -> None:
@@ -67,7 +71,7 @@ class App:
         # Only create the menu if the menu item index has been created
         # if hasattr(self, '_menu_items'):
         self.menubar = Controls.Menu()
-        self.menubar.HorizontalAlignment = WPF.HorizontalAlignment.Left
+        # self.menubar.HorizontalAlignment = WPF.HorizontalAlignment.Left
         group_menu = None
         for cmd in self.interface.commands:
             if cmd == toga.GROUP_BREAK or cmd == toga.SECTION_BREAK:

@@ -27,11 +27,11 @@ class WinWPFViewport:
 
     @property
     def width(self) -> float:
-        return self.native.ActualWidth
+        return self.native.Content.ActualWidth
 
     @property
     def height(self) -> float:
-        return self.native.ActualHeight - self.frame.vertical_shift
+        return self.native.Content.ActualHeight - self.frame.vertical_shift
 
 
 class Window:
@@ -45,7 +45,7 @@ class Window:
             # re-layout the content
             self.interface.content.refresh()
         except AttributeError:
-            __logger__.info('passing AttributeError in _size_changed_handler method.')
+            __logger__.info('Passing AttributeError in Window._size_changed_handler method.')
             pass
 
     def create(self) -> None:
@@ -75,7 +75,7 @@ class Window:
             tb.Items.add(item)
 
     def set_app(self, app: toga.App) -> None:
-        __logger__.info('passing set_app method.')
+        __logger__.info('Passing Window.set_app method.')
         pass
 
     def set_title(self, title: str) -> None:
@@ -85,13 +85,14 @@ class Window:
         dock_panel = self.native.Content
         dock_panel.Children.Clear()
         try:
-            Controls.DockPanel.SetDock(self.interface.app._impl.menubar, Controls.Dock.Top)
             dock_panel.Children.Add(self.interface.app._impl.menubar)
+            Controls.DockPanel.SetDock(self.interface.app._impl.menubar, Controls.Dock.Top)
         except System.ArgumentNullException as ex:
             __logger__.error('Munubar cannot be null:\n{exception}'.format(exception=str(ex)))
             raise
         try:
             dock_panel.Children.Add(self.native_toolbar)
+            Controls.DockPanel.SetDock(self.native_toolbar, Controls.Dock.Top)
         except System.ArgumentNullException:
             __logger__.info('No toolbar defined.')
             pass
