@@ -3,7 +3,7 @@ from travertino.layout import Viewport
 import toga
 from toga import GROUP_BREAK, SECTION_BREAK
 
-from .libs import Controls, WPF, System, VisualTreeHelper
+from .libs import Controls, WPF, System, VisualTreeHelper, __logger__
 from .widgets import base
 
 
@@ -11,7 +11,7 @@ class WinWPFViewport:
     def __init__(self, native: WPF.Window, frame: toga.Window) -> None:
         self.native = native
         self.frame = frame
-        self.native.Parent.DpiChanged += self._dpi_changed_handler
+        self.native.DpiChanged += self._dpi_changed_handler
         pixels_per_dip = VisualTreeHelper.GetDpi(self.native).PixelsPerDip
         self._dpi = self._calc_dpi(pixels_per_dip)
 
@@ -45,6 +45,7 @@ class Window:
             # re-layout the content
             self.interface.content.refresh()
         except AttributeError:
+            __logger__.info('passing AttributeError in _size_changed_handler method.')
             pass
 
     def create(self) -> None:
@@ -55,6 +56,10 @@ class Window:
         self.native.SizeChanged += self._size_changed_handler
         self.native_toolbar = None  # type: WPF.Controls.ToolBarTray
         self.toolbar_items = None  # type: WPF.Controls.Button
+        dock_panel = Controls.DockPanel()
+        self.native.Content = dock_panel
+        # canvas = Controls.Canvas()
+        # self.native.Content = canvas
 
     def create_toolbar(self) -> None:
         tb = Controls.ToolBar()
@@ -70,26 +75,43 @@ class Window:
             tb.Items.add(item)
 
     def set_app(self, app: toga.App) -> None:
+        __logger__.info('passing set_app method.')
         pass
 
     def set_title(self, title: str) -> None:
         self.native.Title = title
 
     def set_content(self, widget: base.Widget) -> None:
-        dock_panel = Controls.DockPanel()
-        dock_panel.LastChildFill = False
+        dock_panel = self.native.Content
+        dock_panel.Children.Clear()
         try:
             Controls.DockPanel.SetDock(self.interface.app._impl.menubar, Controls.Dock.Top)
             dock_panel.Children.Add(self.interface.app._impl.menubar)
-        except System.ArgumentNullException:
-            pass
+        except System.ArgumentNullException as ex:
+            __logger__.error('Munubar cannot be null:\n{exception}'.format(exception=str(ex)))
+            raise
         try:
             dock_panel.Children.Add(self.native_toolbar)
         except System.ArgumentNullException:
+            __logger__.info('No toolbar defined.')
             pass
-        self.native.Content = dock_panel
         dock_panel.Children.Add(widget.native)
-        widget.viewport = WinWPFViewport(dock_panel, self)
+        # try:
+        #     canvas.Children.Add(self.interface.app._impl.menubar)
+        #     Controls.Canvas.SetTop(self.interface.app._impl.menubar, 0)
+        #     Controls.Canvas.SetLeft(self.interface.app._impl.menubar, 0)
+        # except System.ArgumentNullException as ex:
+        #     __logger__.error('Menubar cannot be null:\n{exception}'.format(str(ex)))
+        #     raise
+        # try:
+        #     canvas.Children.Add(self.native_toolbar)
+        #     Controls.Canvas.SetTop(self.native_toolbar, self.interface.app._impl.menubar.ActualHeight)
+        #     Controls.Canvas.SetLeft(self.native_toolbar, 0)
+        # except System.ArgumentNullException as ex:
+        #     __logger__.info('No toolbar defined')
+        #     pass
+        # canvas.Children.Add(widget.native)
+        widget.viewport = WinWPFViewport(self.native, self)
         widget.frame = self
 
     def set_size(self, size: tuple) -> None:
@@ -97,6 +119,7 @@ class Window:
             self.native.Width = size[0]
             self.native.Height = size[1]
         except AttributeError:
+            __logger__.info('passing AttributeError in set_size method.')
             pass
 
     def set_position(self, position: tuple) -> None:
@@ -104,6 +127,7 @@ class Window:
             self.native.Left = position[0]
             self.native.Top = position[1]  # + vertical_shift
         except AttributeError:
+            __logger__.info('passing AttributeError in set_position method.')
             pass
 
     def show(self) -> None:
@@ -118,18 +142,18 @@ class Window:
             self.native.WindowStyle = WPF.WindowStyle.SingleBorderWindow
 
     def on_close(self) -> None:
+        __logger__.info('passing on_close method.')
         pass
 
     @property
     def vertical_shift(self) -> int:
         result = 0
         try:
-            result += self.native.interface._impl.native_toolbar.ActualHeight
+            result += self.native_toolbar.ActualHeight
         except AttributeError:
             pass
         try:
-            # TODO: fix this as there is no MainMenuStrip
-            result += self.native.interface._impl.native.MainMenuStrip.Height
+            result += self.interface.app._impl.menubar.ActualHeight
         except AttributeError:
             pass
         return result
