@@ -9,8 +9,8 @@ def get_brush(c: toga.colors.Color) -> SolidColorBrush:
     try:
         brush = CACHE[c]
     except KeyError:
-        rgba = c.rgba()
-        color = Color.FromARGB(rgba.a, rgba.r, rgba.g, rgba.b)
+        rgba = c.rgba
+        color = Color.FromArgb(rgba.a, rgba.r, rgba.g, rgba.b)
         brush.Color = color
         CACHE[c] = brush
     return brush
