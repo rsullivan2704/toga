@@ -15,20 +15,19 @@ class Widget:
 
         self.native = None
         self.create()
-        self.native.LayoutUpdated += self._size_changed_handler
+        self.native.IsEnabled = interface.enabled
+        self.native.LayoutUpdated += self._layout_updated_handler
         # self.native.SizeChanged += self._size_changed_handler
         # self.native.Loaded += self._loaded_handler
-        # self.interface.style.reapply()
+        self.interface.style.reapply()
 
-    def _loaded_handler(self, sender: System.Object, args: WPF.RoutedEventArgs) -> None:
+    def _layout_updated_handler(self, sender: System.Object, args: WPF.RoutedEventArgs) -> None:
         self.rehint()
-
-    def _size_changed_handler(self, sender: System.Object, args: WPF.RoutedEventArgs) -> None:
-        self.rehint()
+        self.interface.style.reapply()
 
     def rehint(self) -> None:
-        self.interface.intrinsic.width = at_least(self.native.DesiredSize.Width)
-        self.interface.intrinsic.height = at_least(self.native.DesiredSize.Height)
+        self.interface.intrinsic.width = self.native.DesiredSize.Width
+        self.interface.intrinsic.height = self.native.DesiredSize.Height
 
     def add_child(self, child: 'Widget') -> None:
         pass
@@ -61,7 +60,7 @@ class Widget:
             #     vertical_shift = 0
 
             # only set the top and left positions if
-            # this is not a root element.
+            # this is not the root dock panel.
             if self.interface.parent is not None:
                 Controls.Canvas.SetTop(self.native, x)
                 Controls.Canvas.SetLeft(self.native, y)
@@ -69,7 +68,7 @@ class Widget:
             self.native.Width = width
             self.native.Height = height
         except AttributeError as ae:
-            __logger__.info('AttributeError in set_bounds method call:\n{message}'.format(message=str(ae)))  # noqa: E501
+            __logger__.info('Error in set_bounds method call:\n{message}'.format(message=str(ae)))  # noqa: E501
             pass
 
     def set_alignment(self, alignment: Union[LEFT, RIGHT, TOP, BOTTOM, CENTER, JUSTIFY]) -> None:  # noqa: E501
@@ -109,15 +108,19 @@ class Widget:
         self.native.FontWeight = font._impl.native.typeface.Weight
 
     def set_color(self, color: toga.colors.Color) -> None:
-        try:
-            self.native.Foreground = colors.get_brush(color)
-        except (AttributeError, ArgumentException):
-            pass
+        if color:
+            try:
+                self.native.Foreground = colors.get_brush(color)
+            except (AttributeError, ArgumentException) as ex:
+                __logger__.error(str(ex))
+                raise
 
     def set_background_color(self, color: toga.colors.Color) -> None:
-        try:
-            self.native.Background = colors.get_brush(color)
-        except (AttributeError, ArgumentException):
-            pass
+        if color:
+            try:
+                self.native.Background = colors.get_brush(color)
+            except (AttributeError, ArgumentException) as ex:
+                __logger__.error(str(ex))
+                raise
 
 # endregion
