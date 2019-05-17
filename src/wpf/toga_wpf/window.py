@@ -1,5 +1,3 @@
-from travertino.layout import Viewport
-
 import toga
 from toga import GROUP_BREAK, SECTION_BREAK
 
@@ -40,20 +38,12 @@ class Window:
         self.interface._impl = self
         self.create()
 
-    def _layout_updated_handler(self, sender, event) -> None:  # noqa: E501
-        try:
-            # re-layout the content
-            self.interface.content.refresh()
-        except AttributeError:
-            __logger__.info('Passing AttributeError in Window._size_changed_handler method.')
-            pass
-
     def create(self) -> None:
         self.native = WPF.Window()
         self.native.Width = self.interface._size[0]
         self.native.Height = self.interface._size[1]
         self.native.interface = self.interface
-        self.native.LayoutUpdated += self._layout_updated_handler
+        # self.native.LayoutUpdated += self._layout_updated_handler
         self.native_toolbar = None  # type: WPF.Controls.ToolBarTray
         self.toolbar_items = None  # type: WPF.Controls.Button
         dock_panel = Controls.DockPanel()
@@ -74,13 +64,6 @@ class Window:
                 item.Command = cmd.native
             tb.Items.add(item)
 
-    def set_app(self, app: toga.App) -> None:
-        __logger__.info('Passing Window.set_app method.')
-        pass
-
-    def set_title(self, title: str) -> None:
-        self.native.Title = title
-
     def set_content(self, widget: base.Widget) -> None:
         dock_panel = self.native.Content
         dock_panel.Children.Clear()
@@ -88,7 +71,7 @@ class Window:
             dock_panel.Children.Add(self.interface.app._impl.menubar)
             Controls.DockPanel.SetDock(self.interface.app._impl.menubar, Controls.Dock.Top)
         except System.ArgumentNullException as ex:
-            __logger__.error('Munubar cannot be null:\n{exception}'.format(exception=str(ex)))
+            __logger__.error('Menubar cannot be null:\n{exception}'.format(exception=str(ex)))
             raise
         try:
             dock_panel.Children.Add(self.native_toolbar)
@@ -115,13 +98,8 @@ class Window:
         widget.viewport = WinWPFViewport(self.native, self)
         widget.frame = self
 
-    def set_size(self, size: tuple) -> None:
-        try:
-            self.native.Width = size[0]
-            self.native.Height = size[1]
-        except AttributeError:
-            __logger__.info('passing AttributeError in set_size method.')
-            pass
+    def set_title(self, title: str) -> None:
+        self.native.Title = title
 
     def set_position(self, position: tuple) -> None:
         try:
@@ -130,6 +108,18 @@ class Window:
         except AttributeError:
             __logger__.info('passing AttributeError in set_position method.')
             pass
+
+    def set_size(self, size: tuple) -> None:
+        try:
+            self.native.Width = size[0]
+            self.native.Height = size[1]
+        except AttributeError:
+            __logger__.info('passing AttributeError in set_size method.')
+            pass
+
+    def set_app(self, app: toga.App) -> None:
+        __logger__.info('Passing Window.set_app method.')
+        pass
 
     def show(self) -> None:
         self.native.Show()
@@ -144,6 +134,32 @@ class Window:
 
     def on_close(self) -> None:
         __logger__.info('passing on_close method.')
+        pass
+
+    # def _layout_updated_handler(self, sender, event) -> None:  # noqa: E501
+    #     try:
+    #         # re-layout the content
+    #         self.interface.content.refresh()
+    #     except AttributeError:
+    #         __logger__.info('Passing AttributeError in Window._layout_updated_handler method.')
+    #         pass
+
+    def info_dialog(self, title: str, message: str) -> None:
+        pass
+
+    def question_dialog(self, title: str, message: str) -> None:
+        pass
+
+    def confirm_dialog(self, title: str, message: str) -> None:
+        pass
+
+    def error_dialog(self, title: str, message: str) -> None:
+        pass
+
+    def stack_trace_dialog(self, title: str, message: str, content, retry: bool = False) -> None:
+        pass
+
+    def save_file_dialog(self, title: str, suggested_filename: str, file_types: str) -> None:
         pass
 
     @property

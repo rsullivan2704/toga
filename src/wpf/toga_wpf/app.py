@@ -21,49 +21,14 @@ class App:
         self.interface = interface
         self.interface._impl = self
 
-    def current_window(self) -> None:
-        return WPF.Application.Current.Windows.OfType[WPF.Window]().FirstOrDefault(lambda x: x.IsActive)  # noqa: E501
+    def create(self) -> None:
+        self.native = WPF.Application()
+        self.create_app_commands()
 
-    def enter_full_screen(self, windows: Iterable[toga.Window]) -> None:
-        for window in windows:
-            window.full_screen = True
-
-    def exit_full_screen(self, windows: Iterable[toga.Window]) -> None:
-        for window in windows:
-            window.full_screen = False
-
-    def show_cursor(self) -> None:
-        __logger__.debug('Passing App.show_cursor method call.')
-        pass
-
-    def hide_cursor(self) -> None:
-        __logger__.debug('Passing App.hide_cursor method call.')
-        pass
-
-    def main_loop(self) -> None:
-        thread = Threading.Thread(Threading.ThreadStart(self.run_app))  # noqa: E501
-        thread.SetApartmentState(Threading.ApartmentState.STA)
-        thread.Start()
-        thread.Join()
-
-    def exit(self) -> None:
-        return WPF.Application.Current.Shutdown()
-
-    def set_on_exit(self, handler: wrapped_handler) -> None:
-        try:
-            self.native.Exit += add_handler(handler)
-        except AttributeError:
-            __logger__.info('Passing AttributeError in App.set_on_exit method call.')
-            pass
-
-    def create_app_commands(self) -> None:
-        self.interface.commands.add(
-            toga.Command(None, 'About {name}'.format(name=self.interface.name), group=toga.Group.HELP), # noqa: E501
-            toga.Command(None, 'Preferences', group=toga.Group.FILE),
-            # Quit should always be the last item, in a section on it's own
-            toga.Command(lambda s: self.exit(), 'Exit {name}'.format(name=self.interface.name), shortcut='q', group=toga.Group.FILE, section=sys.maxsize), # noqa: E501
-            toga.Command(None, 'Visit homepage', group=toga.Group.HELP)
-        )
+        # Call user code to populate the main window
+        self.create_menus()
+        self.interface.startup()
+        # self.interface.main_window._impl.native.Icon = self.interface.icon.bind(self.interface.factory).native  # noqa: E501
 
     def create_menus(self) -> None:
         toga.Group.FILE.order = 0
@@ -92,14 +57,49 @@ class App:
             if group_menu not in self.menubar.Items:
                 self.menubar.Items.Add(group_menu)
 
-    def create(self) -> None:
-        self.native = WPF.Application()
-        self.create_app_commands()
+    def main_loop(self) -> None:
+        thread = Threading.Thread(Threading.ThreadStart(self.run_app))  # noqa: E501
+        thread.SetApartmentState(Threading.ApartmentState.STA)
+        thread.Start()
+        thread.Join()
 
-        # Call user code to populate the main window
-        self.create_menus()
-        self.interface.startup()
-        # self.interface.main_window._impl.native.Icon = self.interface.icon.bind(self.interface.factory).native  # noqa: E501
+    def exit(self) -> None:
+        return WPF.Application.Current.Shutdown()
+
+    def set_on_exit(self, handler: wrapped_handler) -> None:
+        try:
+            self.native.Exit += add_handler(handler)
+        except AttributeError:
+            __logger__.info('Passing AttributeError in App.set_on_exit method call.')
+            pass
+
+    def current_window(self) -> None:
+        return WPF.Application.Current.Windows.OfType[WPF.Window]().FirstOrDefault(lambda x: x.IsActive)  # noqa: E501
+
+    def enter_full_screen(self, windows: Iterable[toga.Window]) -> None:
+        for window in windows:
+            window.full_screen = True
+
+    def exit_full_screen(self, windows: Iterable[toga.Window]) -> None:
+        for window in windows:
+            window.full_screen = False
+
+    def show_cursor(self) -> None:
+        __logger__.debug('Passing App.show_cursor method call.')
+        pass
+
+    def hide_cursor(self) -> None:
+        __logger__.debug('Passing App.hide_cursor method call.')
+        pass
+
+    def create_app_commands(self) -> None:
+        self.interface.commands.add(
+            toga.Command(None, 'About {name}'.format(name=self.interface.name), group=toga.Group.HELP), # noqa: E501
+            toga.Command(None, 'Preferences', group=toga.Group.FILE),
+            # Quit should always be the last item, in a section on it's own
+            toga.Command(lambda s: self.exit(), 'Exit {name}'.format(name=self.interface.name), shortcut='q', group=toga.Group.FILE, section=sys.maxsize), # noqa: E501
+            toga.Command(None, 'Visit homepage', group=toga.Group.HELP)
+        )
 
     def run_app(self) -> None:
         self.create()

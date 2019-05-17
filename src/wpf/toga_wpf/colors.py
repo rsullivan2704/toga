@@ -4,7 +4,7 @@ from .libs import Color, SolidColorBrush
 CACHE = {}
 
 
-def get_brush(c: toga.colors.Color) -> SolidColorBrush:
+def native_color(c: toga.colors.Color) -> SolidColorBrush:
     brush = SolidColorBrush()
     try:
         brush = CACHE[c]
