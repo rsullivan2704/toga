@@ -19,10 +19,10 @@ class WPFButton(WPF.Controls.Button):
         try:
             self.interface.on_press(self.interface)
         except AttributeError as ex:
-            __logger__.info('Error in on_click method call\n{message}'.format(message=str(ex)))
+            __logger__.info('Passing on AttributeError in on_click method call\n{message}'.format(message=str(ex)))
             pass
         except TypeError:
-            __logger__.info('on_press handler not defined.')
+            __logger__.info('Button.on_press handler not defined.')
             pass
 
 

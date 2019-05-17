@@ -16,13 +16,13 @@ class Widget:
         self.native = None
         self.create()
         self.native.IsEnabled = interface.enabled
-        self.native.LayoutUpdated += self._layout_updated_handler
+        # self.native.LayoutUpdated += self._layout_updated_handler
         self.rehint_count = 0
-        # self.native.SizeChanged += self._size_changed_handler
+        self.native.SizeChanged += self._size_changed_handler
         # self.native.Loaded += self._loaded_handler
         # self.interface.style.reapply()
 
-    def _layout_updated_handler(self, sender: System.Object, args: WPF.RoutedEventArgs) -> None:
+    def _size_changed_handler(self, sender: System.Object, args: WPF.RoutedEventArgs) -> None:
         self.rehint()
         # self.interface.style.reapply()
 
@@ -42,7 +42,7 @@ class Widget:
                 intr_width=self.interface.intrinsic.width,
                 intr_height=self.interface.intrinsic.height,
                 native_width=self.native.ActualWidth,
-                native_height=self.native.ActualHeight
+                native_height=self.native.ActualHeight,
             )
         __logger__.debug(debug_msg)
         self.interface.intrinsic.width = self.native.ActualWidth
@@ -73,26 +73,15 @@ class Widget:
     def set_bounds(self, x: int, y: int, width: int, height: int) -> None:
         # pass
         try:
-            # Root level widgets may require vertical adjustment to
-            # account for toolbars, etc
-            # if self.interface.parent is not None:
-            #     vertical_shift = self.frame.vertical_shift
-            # else:
-            #     vertical_shift = 0
-
-            # only set the top and left positions if
-            # this is not the root dock panel.
+            # only set the bounds if
+            # this is not the root widget.
             if self.interface.parent is not None:
                 Controls.Canvas.SetTop(self.native, x)
                 Controls.Canvas.SetLeft(self.native, y)
-
-            # have to handle the case when we have a root canvas
-            # control we don't want it to be sized but instead it
-            # should remain auto sized to fill the content area
-            self.native.Width = width
-            self.native.Height = height
+                self.native.Width = width
+                self.native.Height = height
         except AttributeError as ae:
-            __logger__.info('Error in set_bounds method call:\n{message}'.format(message=str(ae)))  # noqa: E501
+            __logger__.info('Passing on AttributeError in Widget.set_bounds method call:\n{message}'.format(message=str(ae)))  # noqa: E501
             pass
 
     def set_alignment(self, alignment: Union[LEFT, RIGHT, TOP, BOTTOM, CENTER, JUSTIFY]) -> None:  # noqa: E501
@@ -144,12 +133,12 @@ class Widget:
         #         raise
 
     def set_background_color(self, color: toga.colors.Color) -> None:
-        pass
-        # if color:
-        #     try:
-        #         self.native.Background = colors.get_brush(color)
-        #     except (AttributeError, ArgumentException) as ex:
-        #         __logger__.error(str(ex))
-        #         raise
+        # pass
+        if color:
+            try:
+                self.native.Background = colors.get_brush(color)
+            except (AttributeError, ArgumentException) as ex:
+                __logger__.error(str(ex))
+                raise
 
 # endregion

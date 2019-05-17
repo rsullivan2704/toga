@@ -40,7 +40,7 @@ class Window:
         self.interface._impl = self
         self.create()
 
-    def _size_changed_handler(self, sender, event) -> None:  # noqa: E501
+    def _layout_updated_handler(self, sender, event) -> None:  # noqa: E501
         try:
             # re-layout the content
             self.interface.content.refresh()
@@ -53,7 +53,7 @@ class Window:
         self.native.Width = self.interface._size[0]
         self.native.Height = self.interface._size[1]
         self.native.interface = self.interface
-        self.native.SizeChanged += self._size_changed_handler
+        self.native.LayoutUpdated += self._layout_updated_handler
         self.native_toolbar = None  # type: WPF.Controls.ToolBarTray
         self.toolbar_items = None  # type: WPF.Controls.Button
         dock_panel = Controls.DockPanel()
