@@ -14,12 +14,11 @@ class Widget:
 
         self.native = None
         self.create()
-        self.native.IsEnabled = interface.enabled
         # self.native.LayoutUpdated += self._layout_updated_handler
         self.rehint_count = 0
         # self.native.SizeChanged += self._size_changed_handler
         # self.native.Loaded += self._loaded_handler
-        # self.interface.style.reapply()
+        self.interface.style.reapply()
 
     def set_app(self, app: toga.App) -> None:
         pass
@@ -46,18 +45,18 @@ class Widget:
 # region Applicator
 
     def set_bounds(self, x: int, y: int, width: int, height: int) -> None:
-        pass
-        # try:
-        #     # only set the bounds if
-        #     # this is not the root widget.
-        #     if self.interface.parent is not None:
-        #         Controls.Canvas.SetTop(self.native, x)
-        #         Controls.Canvas.SetLeft(self.native, y)
-        #         self.native.Width = width
-        #         self.native.Height = height
-        # except AttributeError as ae:
-        #     __logger__.info('Passing on AttributeError in Widget.set_bounds method call:\n{message}'.format(message=str(ae)))  # noqa: E501
-        #     pass
+        # pass
+        try:
+            # only set the bounds if
+            # this is not the root widget.
+            if self.interface.parent is not None:
+                Controls.Canvas.SetTop(self.native, x)
+                Controls.Canvas.SetLeft(self.native, y)
+                self.native.Width = width
+                self.native.Height = height
+        except AttributeError as ae:
+            __logger__.info('Passing on AttributeError in Widget.set_bounds method call:\n{message}'.format(message=str(ae)))  # noqa: E501
+            pass
 
     def set_hidden(self, hidden: bool) -> None:
         pass
