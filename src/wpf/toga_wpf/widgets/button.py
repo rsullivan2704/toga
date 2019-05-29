@@ -1,25 +1,23 @@
 import toga
 
-import typing
-
 from toga.handlers import wrapped_handler
 
-from toga_wpf.libs import WPF, __logger__
+from toga_wpf.libs import WPF, Controls, __logger__
 
-from .base import Widget
+from toga_wpf.widgets.base import Widget
 
 
-class WPFButton(WPF.Controls.Button):
+class WPFButton(Controls.Button):
     def __init__(self, interface: toga.Button) -> None:
         super().__init__()
         self.interface = interface
         self.Click += self.on_click
 
-    def on_click(self, sender: WPF.Controls.Button, eventargs: WPF.RoutedEventArgs) -> None:  # noqa: E501
+    def on_click(self, sender: Controls.Button, eventargs: WPF.RoutedEventArgs) -> None:  # noqa: E501
         try:
             self.interface.on_press(self.interface)
         except AttributeError as ex:
-            __logger__.info('Passing on AttributeError in on_click method call\n{message}'.format(message=str(ex)))
+            __logger__.info('Passing on AttributeError in WPFButton.on_click\n{message}'.format(message=str(ex)))
             pass
         except TypeError:
             __logger__.info('Button.on_press handler not defined.')
@@ -34,9 +32,5 @@ class Button(Widget):
         self.native.Content = label
 
     def set_on_press(self, handler: type(wrapped_handler)) -> None:  # noqa: E501
-        __logger__.debug('Passing toga_wpf.Button.set_on_press() method call')
+        __logger__.debug('Passing toga_wpf.Button.set_on_press')
         pass
-
-    # def rehint(self) -> None:
-    #     __logger__.debug('Passing toga_wpf.Button.rehint() method call\n{instance}'.format(instance=self))
-    #     pass

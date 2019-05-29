@@ -1,6 +1,6 @@
 from toga_wpf.libs import Controls
 
-from .base import Widget
+from toga_wpf.widgets.base import Widget
 
 
 class Box(Widget):

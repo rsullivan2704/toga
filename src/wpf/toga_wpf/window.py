@@ -1,14 +1,14 @@
 import toga
 from toga import GROUP_BREAK, SECTION_BREAK
 
-from .libs import Controls, WPF, System, VisualTreeHelper, __logger__
-from .widgets import base
+from toga_wpf.viewport import WPFViewport
+from toga_wpf.libs import Controls, WPF, System, VisualTreeHelper, __logger__
+from toga_wpf.widgets import base
 
 
-class WinWPFViewport:
-    def __init__(self, native: WPF.Window, frame: toga.Window) -> None:
-        self.native = native
-        self.frame = frame
+class WPFWindowViewport(WPFViewport):
+    def __init__(self, native: WPF.Window, frame: 'Window') -> None:
+        super().__init__(native, frame)
         self.native.DpiChanged += self._dpi_changed_handler
         pixels_per_dip = VisualTreeHelper.GetDpi(self.native).PixelsPerDip
         self._dpi = self._calc_dpi(pixels_per_dip)
@@ -17,15 +17,7 @@ class WinWPFViewport:
         self._dpi = self._calc_dpi(args.NewDpi.PixelsPerDip)
 
     def _calc_dpi(self, pixels_per_dip: float) -> float:
-        return pixels_per_dip * 96
-
-    @property
-    def dpi(self) -> float:
-        return self._dpi
-
-    @property
-    def width(self) -> float:
-        return self.native.Content.ActualWidth
+        return pixels_per_dip * self.BASE_DPI
 
     @property
     def height(self) -> float:
@@ -40,16 +32,15 @@ class Window:
 
     def create(self) -> None:
         self.native = WPF.Window()
+        self.native.SizeChanged += self._size_changed_handler
         self.native.Width = self.interface._size[0]
         self.native.Height = self.interface._size[1]
         self.native.interface = self.interface
-        # self.native.LayoutUpdated += self._layout_updated_handler
         self.native_toolbar = None  # type: WPF.Controls.ToolBarTray
         self.toolbar_items = None  # type: WPF.Controls.Button
         dock_panel = Controls.DockPanel()
+        # dock_panel.SizeChanged += self._size_changed_handler
         self.native.Content = dock_panel
-        # canvas = Controls.Canvas()
-        # self.native.Content = canvas
 
     def create_toolbar(self) -> None:
         tb = Controls.ToolBar()
@@ -80,22 +71,7 @@ class Window:
             __logger__.info('No toolbar defined.')
             pass
         dock_panel.Children.Add(widget.native)
-        # try:
-        #     canvas.Children.Add(self.interface.app._impl.menubar)
-        #     Controls.Canvas.SetTop(self.interface.app._impl.menubar, 0)
-        #     Controls.Canvas.SetLeft(self.interface.app._impl.menubar, 0)
-        # except System.ArgumentNullException as ex:
-        #     __logger__.error('Menubar cannot be null:\n{exception}'.format(str(ex)))
-        #     raise
-        # try:
-        #     canvas.Children.Add(self.native_toolbar)
-        #     Controls.Canvas.SetTop(self.native_toolbar, self.interface.app._impl.menubar.ActualHeight)
-        #     Controls.Canvas.SetLeft(self.native_toolbar, 0)
-        # except System.ArgumentNullException as ex:
-        #     __logger__.info('No toolbar defined')
-        #     pass
-        # canvas.Children.Add(widget.native)
-        widget.viewport = WinWPFViewport(self.native, self)
+        widget.viewport = WPFWindowViewport(self.native, self)
         widget.frame = self
 
     def set_title(self, title: str) -> None:
@@ -136,13 +112,13 @@ class Window:
         __logger__.info('passing on_close method.')
         pass
 
-    # def _layout_updated_handler(self, sender, event) -> None:  # noqa: E501
-    #     try:
-    #         # re-layout the content
-    #         self.interface.content.refresh()
-    #     except AttributeError:
-    #         __logger__.info('Passing AttributeError in Window._layout_updated_handler method.')
-    #         pass
+    def _size_changed_handler(self, sender: WPF.FrameworkElement, event: WPF.SizeChangedEventArgs) -> None:  # noqa: E501
+        try:
+            # re-layout the content
+            self.interface.content.refresh()
+        except AttributeError:
+            __logger__.info('Passing AttributeError in Window._size_changed_handler method.')
+            pass
 
     def info_dialog(self, title: str, message: str) -> None:
         pass
