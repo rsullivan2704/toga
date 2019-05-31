@@ -139,5 +139,4 @@ class NumberInput(Widget):
     #     self._set_value('alignment', value)
 
     def set_on_change(self, handler):
-        __logger__.debug('Passing NumberInput.set_on_change')
-        pass
+        self.interface.factory.not_implemented('NumberInput.set_on_change')
