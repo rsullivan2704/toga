@@ -12,7 +12,7 @@ from .widgets.button import Button
 # from .widgets.imageview import ImageView
 from .widgets.datepicker import DatePicker
 from .widgets.label import Label
-# from .widgets.multilinetextinput import MultilineTextInput
+from .widgets.multilinetextinput import MultilineTextInput
 # from .widgets.numberinput import NumberInput
 from .widgets.optioncontainer import OptionContainer
 # from .widgets.passwordinput import PasswordInput
@@ -23,7 +23,7 @@ from .widgets.scrollcontainer import ScrollContainer
 # from .widgets.splitcontainer import SplitContainer
 # from .widgets.switch import Switch
 # from .widgets.table import Table
-# from .widgets.textinput import TextInput
+from .widgets.textinput import TextInput
 # from .widgets.tree import Tree
 # from .widgets.webview import WebView
 from .window import Window
@@ -52,7 +52,7 @@ __all__ = [
     # 'ImageView',
     'DatePicker',
     'Label',
-    # 'MultilineTextInput',
+    'MultilineTextInput',
     # 'NumberInput',
     'OptionContainer',
     # 'PasswordInput',
@@ -63,7 +63,7 @@ __all__ = [
     # 'SplitContainer',
     # 'Switch',
     # 'Table',
-    # 'TextInput',
+    'TextInput',
     # 'Tree',
     # 'WebView',
     'Window',
