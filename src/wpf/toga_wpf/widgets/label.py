@@ -1,4 +1,4 @@
-from toga_wpf.base import Widget
+from toga_wpf.widgets.base import Widget
 from toga_wpf.libs import Controls
 
 
