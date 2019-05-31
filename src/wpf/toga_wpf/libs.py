@@ -17,12 +17,11 @@ clr.AddReference(r"wpf\PresentationFramework")
 
 import System  # noqa: E402
 import System.Windows as WPF    # noqa: E402, W0611
-from System import ArgumentException, Enum, Threading  # noqa: W0611
+from System import ArgumentException, Enum, Reflection, Threading  # noqa: W0611
 from System.Drawing import Brushes  # noqa: W0611
 from System.Globalization import CultureInfo  # noqa: W0611
 from System.Windows import Controls, Data, FontStretches, Input  # noqa: W0611
 from System.Windows.Media import Imaging, FontFamilyConverter, FontFamily, FormattedText, NumberSubstitution, Typeface, Color, Colors, SolidColorBrush, VisualTreeHelper  # noqa: W0611, E501
-
 
 def add_handler(action):
 
